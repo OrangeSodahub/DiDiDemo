@@ -1,0 +1,6 @@
+# predicted images
+*.jpg
+*ocr_result/
+
+# test images
+*test_imgs/

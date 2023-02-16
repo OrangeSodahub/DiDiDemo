@@ -1,0 +1,9 @@
+DARASETS:
+  save_results: './results'
+  test_folder: './test_imgs'
+
+MODEL:
+  name: 'chinese_ocr_db_crnn_server'
+
+IP_CAMERA:
+  url: 'http://admin:admin@192.168.1.103:8081'
