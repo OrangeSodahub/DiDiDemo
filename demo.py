@@ -8,7 +8,7 @@ import paddlehub as hub
 from paddleocr import PaddleOCR, draw_ocr
 
 def run(config: dict, local: bool = False, save_results: bool = False, print_results: bool = False, use_ip_camera: bool = False):
-    # support not save results
+    # TODO: support not save results
     save_dir = config['DATASETS']['save_results']
     if local:
         imgs_folder_path = config['DATASETS']['test_folder']
@@ -16,9 +16,11 @@ def run(config: dict, local: bool = False, save_results: bool = False, print_res
         images = [cv2.imread(os.path.join(imgs_folder_path, img_path)) for img_path in img_paths]
         os.makedirs(save_dir, exist_ok=True)
 
+    # Default to usb camera
+    url = 0
     if use_ip_camera:
         url = config['IP_CAMERA']['url']
-        cap = cv2.VideoCapture(url)
+    cap = cv2.VideoCapture(url)
 
     logging.info("======> Loading model ")
     ocr = hub.Module(name=config['MODEL']['name'])
