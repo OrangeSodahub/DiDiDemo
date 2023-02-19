@@ -8,15 +8,15 @@ from pathlib import Path
 import paddlehub as hub
 from paddleocr import PaddleOCR, draw_ocr
 from paddle.io import DataLoader
-from dataset.dataset import CRPDDataset
+from dataset.dataset import CRPDDataset, CCPDDataset
 
 """
 Use CRPD double datasets.
 """
 def run(config: dict, local: bool = False, save_results: bool = False, print_results: bool = False, use_ip_camera: bool = False):
     # prepare datasets
-    data_path = config['DATASETS']['CRPD']
-    dataset = CRPDDataset(Path(data_path), 'test', config['DATASETS']['str2int'])
+    data_path = config['DATASETS']['CCPD']
+    dataset = CCPDDataset(Path(data_path), 'test', config['DATASETS']['str2int'])
     batch_size = config['MODEL']['test_cfg']['batch_size']
     dataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=4)
     # TODO: support not save results

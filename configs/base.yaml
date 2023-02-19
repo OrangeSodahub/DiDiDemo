@@ -1,5 +1,6 @@
 DATASETS:
   CRPD: './data/CRPD'
+  CCPD: './data/CCPD2020/ccpd_green'
   save_results: './results'
   test_folder: './test_imgs'
   str2int:  [{"皖": 0, "沪": 1, "津": 2, "渝": 3, "冀": 4, "晋": 5, "蒙": 6, "辽": 7, "吉": 8, "黑": 9, "苏": 10,
