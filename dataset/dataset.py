@@ -59,9 +59,35 @@ class CCPDDataset(Dataset):
     def __getitem__(self, idx):
         name = self.splits[idx]
         img = cv2.imread(str(self.split_path / f'{name}.jpg'))
-        label = np.loadtxt(self.label_path/ f'{name}.txt', dtype=str)
+        # TODO: read label directly from image name
+        label = name.split('/')[-1].split('.')[0].split('-')[-3]
         return img, label
 
     def __len__(self):
         return self.num_samples
+
+    def _format_results(self, results, print_results: bool = False):
+        """Format raw outputs to certain type to eval with labelGT.
+        """
+        labelPred = []
+        for result in results:
+            sublabelPred = []
+            data = result['data']
+            # TODO: handle that when len(data) > 1 or == 0
+            # make sure that only one element to output
+            if len(data) > 0:
+                information = data[0]
+                for str in information['text']:
+                    # Skip the characters that not exist
+                    if self.str2int[0].get(str, None) is not None:
+                        sublabelPred.append(self.str2int[0].get(str))
+                    elif self.str2int[1].get(str, None) is not None:
+                        sublabelPred.append(self.str2int[1].get(str))
+                if print_results:
+                    print('text: ', information['text'], '\nconfidence: ', information['confidence'],
+                                        '\ntext_box_position: ', information['text_box_position'])
+            labelPred.append(sublabelPred)
+
+        return labelPred
+
 

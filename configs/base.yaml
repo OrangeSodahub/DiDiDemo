@@ -13,7 +13,8 @@ DATASETS:
 MODEL:
   name: 'chinese_ocr_db_crnn_server'
   test_cfg:
-    batch_size: 64
+    # TODO: improve
+    batch_size: 1
 
 IP_CAMERA:
   url: 'http://admin:admin@192.168.1.103:8081'

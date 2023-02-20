@@ -29,6 +29,9 @@ def run(config: dict, local: bool = False, save_results: bool = False, print_res
     while(cap.isOpened()):  
         ret, frame = cap.read()
         images = [frame]
+        print(type(images))
+        print(type(images[0]))
+        print(images[0].shape)
         results = ocr.recognize_text(
                             images=images,
                             use_gpu=True,
