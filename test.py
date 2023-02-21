@@ -13,15 +13,26 @@ from paddle.io import DataLoader
 from dataset.dataset import CRPDDataset, CCPDDataset
 
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    filename='test.log', filemode='w', level=logging.INFO)
-logger = logging.getLogger().setLevel(logging.INFO)
 """
 Use CRPD double datasets.
 """
+def reset_log():
+    fh = logging.FileHandler('test.log', 'a')
+    sh = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    sh.setFormatter(formatter)
+    log = logging.getLogger()
+    for hdlr in log.handlers:
+        log.removeHandler(hdlr)
+    log.addHandler(fh)
+    log.addHandler(sh)
+    log.setLevel(logging.INFO)
+
+
 def eval(idx, labelGTs, labelPreds, count_list):
     """
-    empty_count: number of [] in labelPreds
+    count_list[8]: number of [] in labelPreds
     count_list[0]: none of matched between GTs and Preds
     """
     assert len(labelGTs) == len(labelPreds)
@@ -35,17 +46,14 @@ def eval(idx, labelGTs, labelPreds, count_list):
                 index = labelPred_.index(g)
                 labelPred_.pop(index)
         count_list[count] += 1
-        logging.info(f"{idx}, GT: {labelGT}, Pred: {labelPred}, ratio: {float(count) / 7}\n")
+        logging.info(f"{idx}, GT: {labelGT}, Pred: {labelPred}, ratio: {float(count) / 7}")
     
-    empty_count = 0
     for labelGT, labelPred in zip(labelGTs, labelPreds):
         if labelPred == []:
-            empty_count += 1
+            count_list[8] += 1
             continue
         eval_single(labelGT, labelPred, count_list)
     
-    return empty_count
-
 
 def run(config: dict, local: bool = False, save_results: bool = False, print_results: bool = False, use_ip_camera: bool = False):
     # prepare datasets
@@ -62,13 +70,11 @@ def run(config: dict, local: bool = False, save_results: bool = False, print_res
     ocr = hub.Module(name=config['MODEL']['name'])
 
     logging.info("======> Testing start ")
-    count = 0
-    count_list = [0] * 8
+    count_list = [0] * 9
     start = time()
     for idx, (imgs, labels) in enumerate(dataLoader()):
         # TODO: How to input tensor to ocr
         imgs = [img for img in imgs.numpy()]
-        count += 1
         labelGT = [[int(ee) for ee in el.split('_')[:7]] for el in labels]
         results = ocr.recognize_text(
                             images=imgs,
@@ -80,14 +86,16 @@ def run(config: dict, local: bool = False, save_results: bool = False, print_res
 
         labelPred = dataset._format_results(results, print_results)
 
-        empty_count = eval(idx, labelGT, labelPred, count_list)
+        eval(idx, labelGT, labelPred, count_list)
     
     # summary
     counter = 0
-    for idx, count in enumerate(count_list):
+    for idx, count in enumerate(count_list[:8]):
         counter += idx * count
-    print ('total %s precision %s precision_ %s fps %s' % \
-         (len(dataset), float(counter)/(len(dataset)*7), float(counter)/((len(dataset)-empty_count)*7), len(dataset)/(time() - start)))
+    empty_count = count_list[8]
+    logging.info('total %s precision %s precision_ %s\n fps %s count_list' % \
+         (len(dataset), float(counter)/(len(dataset)*7), float(counter)/((len(dataset)-empty_count)*7),
+         len(dataset)/(time() - start)), count_list)
 
 
 if __name__ == '__main__':
@@ -97,16 +105,11 @@ if __name__ == '__main__':
     parser.add_argument("--save", help="whether to save the results", action='store_true', required=False)
     args = parser.parse_args()
 
+    reset_log()
     with open(args.config, 'r') as f:
         try:
             config = yaml.load(f, Loader=yaml.FullLoader)
         except:
             raise FileNotFoundError
-
-    # fh = logging.FileHandler('test.log').setLevel(logging.INFO)
-    # ch = logging.StreamHandler().setLevel(logging.INFO)
-    # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # fh.setFormatter(formatter)
-    # ch.setFormatter(formatter)
 
     run(config, args.save, print_results=args.print)
