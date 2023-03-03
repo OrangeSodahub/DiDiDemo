@@ -3,11 +3,15 @@
 *ocr_result/
 *results/
 
-# test images
+# dataset
 *test_imgs/
+*CCPD**
 
 # python
 *__pycache__/
 
 # debug
 *debug*
+
+# ckpts
+*models/*
