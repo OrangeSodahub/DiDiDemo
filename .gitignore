@@ -15,3 +15,9 @@
 
 # ckpts
 *models/*
+
+# others
+*.7z
+*.zip
+*Linux_Upgrade_Tool*
+*Ubuntu*
